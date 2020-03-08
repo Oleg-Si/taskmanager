@@ -1,5 +1,5 @@
 import {getRandomInt} from './utils.js';
-import {filters} from './mock.js';
+import {filters, taskData} from './mock.js';
 import createFilter from './create-filter.js';
 import createTaskTemplate from './create-task-template.js';
 
@@ -12,12 +12,15 @@ filters.forEach((filter) => {
 const taskContainer = document.querySelector('.board__tasks');
 
 const createTask = (countTask) => {
+  const taskMarkdown = [];
   for (let i = 0; i < countTask; i++) {
-    taskContainer.insertAdjacentHTML('beforeend', createTaskTemplate());
+    taskMarkdown.push(createTaskTemplate(taskData()));
   }
+
+  return taskMarkdown;
 };
 
-createTask(7);
+taskContainer.insertAdjacentHTML('beforeend', createTask(7).join(''));
 
 const filtersLabels = document.querySelectorAll('.filter__label');
 
