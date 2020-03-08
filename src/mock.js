@@ -49,3 +49,38 @@ export const filters = [
     id: 'filter__archive'
   }
 ];
+
+export const taskData = () => ({
+  title: [
+    `Изучить английский`,
+    `Сделать закупки`,
+    `Уволится из МЧС`,
+    `Устроиться frontend разработчиком`,
+  ][Math.floor(Math.random() * 4)],
+  dueDate: Date.now() + 1 + Math.floor(Math.random() * 7) * 24 * 60 * 60 * 1000,
+  tags: new Set([
+    `МЧС`,
+    `увольнение`,
+    `frontend`,
+    `английский`
+  ]),
+  picture: `//picsum.photos/100/100?r=${Math.random()}`,
+  color: [
+    `black`,
+    `blue`,
+    `green`,
+    `pink`,
+    `yellow`
+  ][Math.floor(Math.random() * 5)],
+  repeatingDays: {
+    'mo': true,
+    'tu': false,
+    'we': true,
+    'th': false,
+    'fr': false,
+    'sa': true,
+    'su': false,
+  },
+  isFavorite: false,
+  isDone: false
+});
