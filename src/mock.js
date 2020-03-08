@@ -65,6 +65,13 @@ export const taskData = () => ({
     `английский`
   ]),
   picture: `//picsum.photos/100/100?r=${Math.random()}`,
+  color: [
+    `black`,
+    `blue`,
+    `green`,
+    `pink`,
+    `yellow`
+  ][Math.floor(Math.random() * 5)],
   repeatingDays: {
     'mo': true,
     'tu': false,

@@ -14,7 +14,7 @@ const taskContainer = document.querySelector('.board__tasks');
 const createTask = (countTask) => {
   const taskMarkdown = [];
   for (let i = 0; i < countTask; i++) {
-    taskMarkdown.push(createTaskTemplate(taskData()));
+    taskMarkdown.push(createTaskTemplate(taskData(), i));
   }
 
   return taskMarkdown;
