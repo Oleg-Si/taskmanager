@@ -1,7 +1,9 @@
 import {getRandomInt} from './utils.js';
 import {filters, taskData} from './mock.js';
 import createFilter from './create-filter.js';
-import createTaskTemplate from './create-task-template.js';
+
+import Task from './task.js';
+import TaskEdit from './task-edit.js';
 
 const filterContainer = document.querySelector('.main__filter');
 
@@ -9,24 +11,46 @@ filters.forEach((filter) => {
   filterContainer.insertAdjacentHTML('beforeend', createFilter(filter));
 });
 
-const taskContainer = document.querySelector('.board__tasks');
+const tasksContainer = document.querySelector('.board__tasks');
 
 const createTask = (countTask) => {
-  const taskMarkdown = [];
+  const allTask = [];
+
   for (let i = 0; i < countTask; i++) {
-    taskMarkdown.push(createTaskTemplate(taskData(), i));
+    const taskDataw = taskData();
+    const task = new Task(taskDataw);
+    const taskEdit = new TaskEdit(taskDataw, i);
+
+    task.onEdit = () => {
+      taskEdit.render();
+      tasksContainer.replaceChild(taskEdit.element, task.element);
+      task.unrender();
+    };
+
+    taskEdit.onSubmit = () => {
+      task.render();
+      tasksContainer.replaceChild(task.element, taskEdit.element);
+      taskEdit.unrender();
+    };
+
+    allTask.push(task);
   }
 
-  return taskMarkdown;
+  const fragment = document.createDocumentFragment();
+  for (const task of allTask) {
+    fragment.appendChild(task.render());
+  }
+
+  return fragment;
 };
 
-taskContainer.insertAdjacentHTML('beforeend', createTask(7).join(''));
+tasksContainer.appendChild(createTask(7));
 
 const filtersLabels = document.querySelectorAll('.filter__label');
 
 filtersLabels.forEach((filterLabel) => {
   filterLabel.addEventListener('click', () => {
-    taskContainer.innerHTML = '';
+    tasksContainer.innerHTML = '';
     createTask(getRandomInt(1, 8));
   });
 });
