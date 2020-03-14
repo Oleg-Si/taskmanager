@@ -5,21 +5,21 @@ import createFilter from './create-filter.js';
 import Task from './task.js';
 import TaskEdit from './task-edit.js';
 
-const filterContainer = document.querySelector('.main__filter');
+const filterContainer = document.querySelector(`.main__filter`);
 
 filters.forEach((filter) => {
-  filterContainer.insertAdjacentHTML('beforeend', createFilter(filter));
+  filterContainer.insertAdjacentHTML(`beforeend`, createFilter(filter));
 });
 
-const tasksContainer = document.querySelector('.board__tasks');
+const tasksContainer = document.querySelector(`.board__tasks`);
 
 const createTask = (countTask) => {
   const allTask = [];
 
   for (let i = 0; i < countTask; i++) {
-    const taskDataw = taskData();
-    const task = new Task(taskDataw);
-    const taskEdit = new TaskEdit(taskDataw, i);
+    const data = taskData();
+    const task = new Task(data);
+    const taskEdit = new TaskEdit(data, i);
 
     task.onEdit = () => {
       taskEdit.render();
@@ -46,11 +46,11 @@ const createTask = (countTask) => {
 
 tasksContainer.appendChild(createTask(7));
 
-const filtersLabels = document.querySelectorAll('.filter__label');
+const filtersLabels = document.querySelectorAll(`.filter__label`);
 
 filtersLabels.forEach((filterLabel) => {
-  filterLabel.addEventListener('click', () => {
-    tasksContainer.innerHTML = '';
-    createTask(getRandomInt(1, 8));
+  filterLabel.addEventListener(`click`, () => {
+    tasksContainer.innerHTML = ``;
+    tasksContainer.appendChild(createTask(getRandomInt(1, 8)));
   });
 });

@@ -1,4 +1,4 @@
-import {createElement} from './utils.js';
+import Component from './component.js';
 
 const Colors = [
   `black`,
@@ -8,8 +8,9 @@ const Colors = [
   `yellow`
 ];
 
-export default class TaskEdit {
+export default class TaskEdit extends Component {
   constructor(data, taskNumber) {
+    super();
     this._title = data.title;
     this._color = data.color;
     this._tags = data.tags;
@@ -18,8 +19,9 @@ export default class TaskEdit {
     this._repeatingDays = data.repeatingDays;
     this._taskNumber = taskNumber;
 
-    this._element = null;
     this._onSubmit = null;
+
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
   }
 
   _createHashtags(tags) {
@@ -27,24 +29,24 @@ export default class TaskEdit {
       <input type="hidden" name="hashtag" value="repeat" class="card__hashtag-hidden-input">
       <button type="button" class="card__hashtag-name">#${el}</button>
       <button type="button" class="card__hashtag-delete">delete</button>
-    </span>`.trim()).join('');
+    </span>`.trim()).join(``);
   }
 
   _createTime(tmstp) {
-    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'})}" name="time" value="${new Date(tmstp).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'})}">`;
+    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}">`;
   }
 
   _createRepeatDays(days, number) {
     const repeatDaysMarkdown = [];
 
     for (const day of Object.keys(days)) {
-      repeatDaysMarkdown.push(`<input class="visually-hidden card__repeat-day-input" type="checkbox"     name="repeat" value="${day}" id="repeat-${day}-${number}" ${days[day] ? 'checked' : ''}>
+      repeatDaysMarkdown.push(`<input class="visually-hidden card__repeat-day-input" type="checkbox"     name="repeat" value="${day}" id="repeat-${day}-${number}" ${days[day] ? `checked` : ``}>
       <label class="card__repeat-day" for="repeat-${day}-${number}">
         ${day}
       </label>`.trim());
     }
 
-    return repeatDaysMarkdown.join('');
+    return repeatDaysMarkdown.join(``);
   }
 
   _createColorPanel(colors, number) {
@@ -55,11 +57,11 @@ export default class TaskEdit {
       <label for="color-${el}-${number}" class="card__color card__color--${el}">${el}</label>`);
     });
 
-    return colorPanelMarkdown.join('');
+    return colorPanelMarkdown.join(``);
   }
 
   _createDate(tmstp) {
-    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString('ru-RU', {month: 'long'})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString('ru-RU', {month: 'long'})}">`;
+    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}">`;
   }
 
   get template() {
@@ -154,33 +156,23 @@ export default class TaskEdit {
     </article>`.trim();
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onSubmit(fn) {
     if (typeof fn === `function`) {
       this._onSubmit = fn;
     }
   }
 
+  _onSubmitButtonClick() {
+    typeof this._onSubmit === `function` && this._onSubmit();
+  }
+
   setListener() {
     this._element.querySelector(`.card__save`)
-      .addEventListener(`click`, this._onSubmit.bind(this));
+      .addEventListener(`click`, this._onSubmitButtonClick);
   }
 
   removeListener() {
-
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    this.setListener();
-
-    return this._element;
-  }
-
-  unrender() {
-    this._element = null;
+    this._element.querySelector(`.card__save`)
+      .removeEventListener(`click`, this._onSubmitButtonClick);
   }
 }
