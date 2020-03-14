@@ -1,7 +1,8 @@
-import {createElement} from './utils.js';
+import Component from './component.js';
 
-export default class Task {
+export default class Task extends Component {
   constructor(data) {
+    super();
     this._title = data.title;
     this._color = data.color;
     this._tags = data.tags;
@@ -9,8 +10,9 @@ export default class Task {
     this._dueDate = data.dueDate;
     this._repeatingDays = data.repeatingDays;
 
-    this._element = null;
     this._onEdit = null;
+
+    this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
 
   _createDate(tmstp) {
@@ -93,33 +95,23 @@ export default class Task {
     </article>`.trim();
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onEdit(fn) {
     if (typeof fn === `function`) {
       this._onEdit = fn;
     }
   }
 
+  _onEditButtonClick() {
+    typeof this._onEdit === `function` && this._onEdit();
+  }
+
   setListener() {
     this._element.querySelector(`.card__btn--edit`)
-      .addEventListener(`click`, this._onEdit.bind(this));
+      .addEventListener(`click`, this._onEditButtonClick);
   }
 
   removeListener() {
-
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    this.setListener();
-
-    return this._element;
-  }
-
-  unrender() {
-    this._element = null;
+    this._element.querySelector(`.card__btn--edit`)
+      .removeEventListener(`click`, this._onEditButtonClick);
   }
 }

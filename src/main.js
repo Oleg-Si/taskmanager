@@ -17,9 +17,9 @@ const createTask = (countTask) => {
   const allTask = [];
 
   for (let i = 0; i < countTask; i++) {
-    const taskDataw = taskData();
-    const task = new Task(taskDataw);
-    const taskEdit = new TaskEdit(taskDataw, i);
+    const data = taskData();
+    const task = new Task(data);
+    const taskEdit = new TaskEdit(data, i);
 
     task.onEdit = () => {
       taskEdit.render();
@@ -51,6 +51,6 @@ const filtersLabels = document.querySelectorAll(`.filter__label`);
 filtersLabels.forEach((filterLabel) => {
   filterLabel.addEventListener(`click`, () => {
     tasksContainer.innerHTML = ``;
-    createTask(getRandomInt(1, 8));
+    tasksContainer.appendChild(createTask(getRandomInt(1, 8)));
   });
 });

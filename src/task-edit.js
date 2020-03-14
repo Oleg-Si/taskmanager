@@ -1,4 +1,4 @@
-import {createElement} from './utils.js';
+import Component from './component.js';
 
 const Colors = [
   `black`,
@@ -8,8 +8,9 @@ const Colors = [
   `yellow`
 ];
 
-export default class TaskEdit {
+export default class TaskEdit extends Component {
   constructor(data, taskNumber) {
+    super();
     this._title = data.title;
     this._color = data.color;
     this._tags = data.tags;
@@ -18,8 +19,9 @@ export default class TaskEdit {
     this._repeatingDays = data.repeatingDays;
     this._taskNumber = taskNumber;
 
-    this._element = null;
     this._onSubmit = null;
+
+    this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
   }
 
   _createHashtags(tags) {
@@ -154,33 +156,23 @@ export default class TaskEdit {
     </article>`.trim();
   }
 
-  get element() {
-    return this._element;
-  }
-
   set onSubmit(fn) {
     if (typeof fn === `function`) {
       this._onSubmit = fn;
     }
   }
 
+  _onSubmitButtonClick() {
+    typeof this._onSubmit === `function` && this._onSubmit();
+  }
+
   setListener() {
     this._element.querySelector(`.card__save`)
-      .addEventListener(`click`, this._onSubmit.bind(this));
+      .addEventListener(`click`, this._onSubmitButtonClick);
   }
 
   removeListener() {
-
-  }
-
-  render() {
-    this._element = createElement(this.template);
-    this.setListener();
-
-    return this._element;
-  }
-
-  unrender() {
-    this._element = null;
+    this._element.querySelector(`.card__save`)
+      .removeEventListener(`click`, this._onSubmitButtonClick);
   }
 }
