@@ -14,17 +14,17 @@ export default class Task {
   }
 
   _createDate(tmstp) {
-    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString('ru-RU', {month: 'long'})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString('ru-RU', {month: 'long'})}">`;
+    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}">`;
   }
 
   _createTime(tmstp) {
-    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'})}" name="time" value="${new Date(tmstp).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'})}">`;
+    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}">`;
   }
 
   _createHashtags(tags) {
     return [...tags].map((el) => `<span class="card__hashtag-inner">
       <button type="button" class="card__hashtag-name">#${el}</button>
-    </span>`).join('');
+    </span>`).join(``);
   }
 
   get template() {

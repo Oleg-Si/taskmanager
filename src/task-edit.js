@@ -27,24 +27,24 @@ export default class TaskEdit {
       <input type="hidden" name="hashtag" value="repeat" class="card__hashtag-hidden-input">
       <button type="button" class="card__hashtag-name">#${el}</button>
       <button type="button" class="card__hashtag-delete">delete</button>
-    </span>`.trim()).join('');
+    </span>`.trim()).join(``);
   }
 
   _createTime(tmstp) {
-    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'})}" name="time" value="${new Date(tmstp).toLocaleString('en-US', {hour: 'numeric', minute: 'numeric'})}">`;
+    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}">`;
   }
 
   _createRepeatDays(days, number) {
     const repeatDaysMarkdown = [];
 
     for (const day of Object.keys(days)) {
-      repeatDaysMarkdown.push(`<input class="visually-hidden card__repeat-day-input" type="checkbox"     name="repeat" value="${day}" id="repeat-${day}-${number}" ${days[day] ? 'checked' : ''}>
+      repeatDaysMarkdown.push(`<input class="visually-hidden card__repeat-day-input" type="checkbox"     name="repeat" value="${day}" id="repeat-${day}-${number}" ${days[day] ? `checked` : ``}>
       <label class="card__repeat-day" for="repeat-${day}-${number}">
         ${day}
       </label>`.trim());
     }
 
-    return repeatDaysMarkdown.join('');
+    return repeatDaysMarkdown.join(``);
   }
 
   _createColorPanel(colors, number) {
@@ -55,11 +55,11 @@ export default class TaskEdit {
       <label for="color-${el}-${number}" class="card__color card__color--${el}">${el}</label>`);
     });
 
-    return colorPanelMarkdown.join('');
+    return colorPanelMarkdown.join(``);
   }
 
   _createDate(tmstp) {
-    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString('ru-RU', {month: 'long'})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString('ru-RU', {month: 'long'})}">`;
+    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}">`;
   }
 
   get template() {
