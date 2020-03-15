@@ -5,7 +5,7 @@
   "description": "Личный проект «Менеджер задач» от HTML Academy",
   "scripts": {
     "build": "webpack",
-    "eslint": "eslint src/**/*.js",
+    "eslint": "eslint src/**/*.js --fix",
     "start": "webpack-dev-server --open",
     "test": "npm run eslint"
   },
@@ -18,5 +18,9 @@
   },
   "engines": {
     "node": "10"
+  },
+  "dependencies": {
+    "flatpickr": "^4.6.3",
+    "moment": "^2.24.0"
   }
 }

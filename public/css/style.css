@@ -786,3 +786,9 @@ body {
   display: flex;
   justify-content: space-between;
 }
+
+textarea:disabled,
+input:disabled {
+  color: inherit;
+  background-color: transparent;
+}
