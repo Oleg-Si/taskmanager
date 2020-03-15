@@ -1,4 +1,8 @@
 import Component from './component.js';
+import getDefaultTask from './get-default-task.js';
+import flatpickr from 'flatpickr';
+import {Russian as flatpickrRuLang} from 'flatpickr/dist/l10n/ru.js';
+import moment from 'moment';
 
 const Colors = [
   `black`,
@@ -20,13 +24,20 @@ export default class TaskEdit extends Component {
     this._taskNumber = taskNumber;
 
     this._onSubmit = null;
+    this._state.isDate = false;
+    this._state.isRepeated = this._isRepeated();
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._onChangeDate = this._onChangeDate.bind(this);
+    this._onChangeRepeated = this._onChangeRepeated.bind(this);
+    this._onChangeColor = this._onChangeColor.bind(this);
+    this._onClickTagsList = this._onClickTagsList.bind(this);
+    this._onKeydownTagsInput = this._onKeydownTagsInput.bind(this);
   }
 
   _createHashtags(tags) {
     return [...tags].map((el) => `<span class="card__hashtag-inner">
-      <input type="hidden" name="hashtag" value="repeat" class="card__hashtag-hidden-input">
+      <input type="hidden" name="hashtag" value="${el}" class="card__hashtag-hidden-input">
       <button type="button" class="card__hashtag-name">#${el}</button>
       <button type="button" class="card__hashtag-delete">delete</button>
     </span>`.trim()).join(``);
@@ -53,7 +64,7 @@ export default class TaskEdit extends Component {
     const colorPanelMarkdown = [];
 
     colors.forEach((el) => {
-      colorPanelMarkdown.push(`<input type="radio" id="color-${el}-${number}" class="card__color-input card__color-input--${el} visually-hidden" name="color" value="${el}">
+      colorPanelMarkdown.push(`<input type="radio" id="color-${el}-${number}" class="card__color-input card__color-input--${el} visually-hidden" name="color" value="${el}" ${el === this._color ? `checked` : ``}>
       <label for="color-${el}-${number}" class="card__color card__color--${el}">${el}</label>`);
     });
 
@@ -64,13 +75,57 @@ export default class TaskEdit extends Component {
     return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}">`;
   }
 
+  _isRepeated() {
+    return Object.entries(this._repeatingDays).some((el) => el[1] === true);
+  }
+
+  static createMapper(entry) {
+    return {
+      text: (value) => entry.title = value,
+      hashtag: (value) => entry.tags.add(value),
+      color: (value) => entry.color = value,
+      dueDate: (value) => {
+        moment.locale(`ru`);
+        entry.dueDate = moment(value, `DD MMM LT`).valueOf();
+      },
+      repeat: (value) => entry.repeatingDays[value] = true
+    };
+  }
+
+  _transformData(formData) {
+    const entry = getDefaultTask();
+    const mapper = TaskEdit.createMapper(entry);
+    let dueDateFlag = 0;
+    let dueDate = ``;
+
+    for (const pair of formData.entries()) {
+      let [key, value] = pair;
+
+      if (key === `date` || key === `time`) {
+        dueDate += ` ${value}`;
+        dueDateFlag++;
+
+        if (dueDateFlag === 2) {
+          key = `dueDate`;
+          value = dueDate.trim();
+        }
+      }
+
+      if (mapper[key]) {
+        mapper[key](value);
+      }
+    }
+
+    return entry;
+  }
+
   get template() {
     return `
-    <article class="card card--${this._color} card--edit">
+    <article class="card card--${this._color} card--edit ${this._state.isRepeated ? `card--repeat` : ``}">
       <form class="card__form" method="get">
         <div class="card__inner">
           <div class="card__control">
-            <button type="button" class="card__btn card__btn--edit">
+            <button type="button" class="card__btn card__btn--edit card__btn--disabled">
             edit
             </button>
 
@@ -99,10 +154,10 @@ export default class TaskEdit extends Component {
             <div class="card__details">
               <div class="card__dates">
                 <button class="card__date-deadline-toggle" type="button">
-                date: <span class="card__date-status">no</span>
+                  date: <span class="card__date-status">${this._state.isDate ? `yes` : `no`}</span>
                 </button>
 
-                <fieldset class="card__date-deadline">
+                <fieldset class="card__date-deadline" ${this._state.isDate ? `` : `disabled`}>
                   <label class="card__input-deadline-wrap">
                     ${this._createDate(this._dueDate)}
                   </label>
@@ -113,10 +168,10 @@ export default class TaskEdit extends Component {
                 </fieldset>
 
                 <button class="card__repeat-toggle" type="button">
-                repeat:<span class="card__repeat-status">no</span>
+                  repeat: <span class="card__repeat-status">${this._state.isRepeated ? `yes` : `no`}</span>
                 </button>
 
-                <fieldset class="card__repeat-days">
+                <fieldset class="card__repeat-days" ${this._state.isRepeated ? `` : `disabled`}>
                   <div class="card__repeat-days-inner">
                     ${this._createRepeatDays(this._repeatingDays, this._taskNumber)}
                   </div>
@@ -162,17 +217,159 @@ export default class TaskEdit extends Component {
     }
   }
 
-  _onSubmitButtonClick() {
-    typeof this._onSubmit === `function` && this._onSubmit();
+  _onSubmitButtonClick(e) {
+    e.preventDefault();
+
+    const form = this._element.querySelector(`.card__form`);
+    const formData = new FormData(form);
+
+    const newData = this._transformData(formData);
+
+    this.update(newData);
+    this._state.isRepeated = this._isRepeated();
+
+    typeof this._onSubmit === `function` && this._onSubmit(newData);
+  }
+
+  _partialUpdate() {
+    this.removeListener();
+
+    const wrap = document.createElement(`div`);
+    wrap.innerHTML = this.template;
+    this._element.innerHTML = ``;
+    this._element.appendChild(wrap.querySelector(`.card__form`));
+
+    this.setListener();
+  }
+
+  _onChangeDate() {
+    this._state.isDate = !this._state.isDate;
+    this._partialUpdate();
+  }
+
+  _onChangeRepeated() {
+    if (this._state.isRepeated === true) {
+      this._element.classList.remove(`card--repeat`);
+      for (const pair of Object.entries(this._repeatingDays)) {
+        const [key] = pair;
+
+        this._repeatingDays[key] = false;
+      }
+    } else {
+      this._element.classList.add(`card--repeat`);
+    }
+
+    this._state.isRepeated = !this._state.isRepeated;
+    this._partialUpdate();
+  }
+
+  _onChangeColor(e) {
+    if (e.target.tagName.toLowerCase() === `input`) {
+      this._color = e.target.value;
+
+      Colors.forEach((el) => {
+        this._element.classList.remove(`card--${el}`);
+      });
+
+      this._element.classList.add(`card--${this._color}`);
+    }
+  }
+
+  _onClickTagsList(e) {
+    const target = e.target;
+    const input = this._element.querySelector(`.card__hashtag-input`);
+
+    if (target.classList.contains(`card__hashtag-delete`)) {
+      target.parentElement.remove();
+    }
+
+    if (target.classList.contains(`card__hashtag-name`)) {
+      const element = e.target;
+      const elementInput = element.parentElement.querySelector(`.card__hashtag-hidden-input`);
+
+      element.classList.add(`edit`);
+      input.classList.add(`edit`);
+      const oldText = element.textContent;
+
+      input.value = oldText;
+      input.focus();
+
+      input.addEventListener(`focusout`, () => {
+        if (element.classList.contains(`edit`)) {
+          const newText = input.value;
+
+          element.textContent = newText;
+          elementInput.value = newText;
+          element.classList.remove(`edit`);
+
+          input.value = ``;
+          input.classList.remove(`edit`);
+        }
+      });
+    }
+  }
+
+  _onKeydownTagsInput(e) {
+    if (e.keyCode === 13) {
+      e.preventDefault();
+
+      const container = this._element.querySelector(`.card__hashtag-list`);
+      const value = e.target.value;
+      e.target.value = ``;
+
+      const newTag = `
+      <span class="card__hashtag-inner">
+        <input type="hidden" name="hashtag" value="${value}" class="card__hashtag-hidden-input">
+        <button type="button" class="card__hashtag-name">#${value}</button>
+        <button type="button" class="card__hashtag-delete">delete</button>
+      </span>`.trim();
+
+      container.insertAdjacentHTML(`beforeend`, newTag);
+
+    }
+  }
+
+  _setFlatpickr() {
+    const cartDate = this._element.querySelector(`.card__date`);
+    const cartTime = this._element.querySelector(`.card__time`);
+
+    flatpickr(cartDate, {
+      locale: flatpickrRuLang,
+      dateFormat: `j F`
+    });
+
+    flatpickr(cartTime, {
+      enableTime: true,
+      noCalendar: true,
+      dateFormat: `h:i K`,
+    });
   }
 
   setListener() {
-    this._element.querySelector(`.card__save`)
-      .addEventListener(`click`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__save`).addEventListener(`click`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__date-deadline-toggle`).addEventListener(`click`, this._onChangeDate);
+    this._element.querySelector(`.card__repeat-toggle`).addEventListener(`click`, this._onChangeRepeated);
+    this._element.querySelector(`.card__colors-wrap`).addEventListener(`click`, this._onChangeColor);
+    this._element.querySelector(`.card__hashtag-list`).addEventListener(`click`, this._onClickTagsList);
+    this._element.querySelector(`.card__hashtag-input`).addEventListener(`keydown`, this._onKeydownTagsInput);
+
+    this._setFlatpickr();
   }
 
   removeListener() {
-    this._element.querySelector(`.card__save`)
-      .removeEventListener(`click`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__save`).removeEventListener(`click`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__date-deadline-toggle`).removeEventListener(`click`, this._onChangeDate);
+    this._element.querySelector(`.card__repeat-toggle`).removeEventListener(`click`, this._onChangeRepeated);
+    this._element.querySelector(`.card__colors-wrap`).removeEventListener(`click`, this._onChangeColor);
+    this._element.querySelector(`.card__hashtag-list`).removeEventListener(`click`, this._onClickTagsList);
+    this._element.querySelector(`.card__hashtag-input`).removeEventListener(`keydown`, this._onKeydownTagsInput);
+  }
+
+  update(data) {
+    this._title = data.title;
+    this._color = data.color;
+    this._tags = data.tags;
+    this._dueDate = data.dueDate;
+    this._repeatingDays = data.repeatingDays;
   }
 }

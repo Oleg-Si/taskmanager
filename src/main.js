@@ -17,7 +17,7 @@ const createTask = (countTask) => {
   const allTask = [];
 
   for (let i = 0; i < countTask; i++) {
-    const data = taskData();
+    let data = taskData();
     const task = new Task(data);
     const taskEdit = new TaskEdit(data, i);
 
@@ -27,7 +27,11 @@ const createTask = (countTask) => {
       task.unrender();
     };
 
-    taskEdit.onSubmit = () => {
+    taskEdit.onSubmit = (newData) => {
+
+      data = Object.assign(newData);
+
+      task.update(data);
       task.render();
       tasksContainer.replaceChild(task.element, taskEdit.element);
       taskEdit.unrender();

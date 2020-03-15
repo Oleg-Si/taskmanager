@@ -11,16 +11,18 @@ export default class Task extends Component {
     this._repeatingDays = data.repeatingDays;
 
     this._onEdit = null;
+    this._state.isDate = false;
+    this._state.isRepeated = this._isRepeated();
 
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
 
   _createDate(tmstp) {
-    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}">`;
+    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" disabled>`;
   }
 
   _createTime(tmstp) {
-    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}">`;
+    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" disabled>`;
   }
 
   _createHashtags(tags) {
@@ -29,9 +31,13 @@ export default class Task extends Component {
     </span>`).join(``);
   }
 
+  _isRepeated() {
+    return Object.entries(this._repeatingDays).some((el) => el[1] === true);
+  }
+
   get template() {
     return `
-    <article class="card card--${this._color}">
+    <article class="card card--${this._color} ${this._isRepeated() ? `card--repeat` : ``}">
       <form class="card__form" method="get">
         <div class="card__inner">
           <div class="card__control">
@@ -56,7 +62,7 @@ export default class Task extends Component {
 
           <div class="card__textarea-wrap">
             <label>
-              <textarea class="card__text" placeholder="Start typing your text here..." name="text">${this._title}</textarea>
+              <textarea class="card__text" placeholder="Start typing your text here..." name="text" disabled>${this._title}</textarea>
             </label>
           </div>
 
@@ -113,5 +119,13 @@ export default class Task extends Component {
   removeListener() {
     this._element.querySelector(`.card__btn--edit`)
       .removeEventListener(`click`, this._onEditButtonClick);
+  }
+
+  update(data) {
+    this._title = data.title;
+    this._color = data.color;
+    this._tags = data.tags;
+    this._dueDate = data.dueDate;
+    this._repeatingDays = data.repeatingDays;
   }
 }
