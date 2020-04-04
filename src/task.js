@@ -11,18 +11,23 @@ export default class Task extends Component {
     this._repeatingDays = data.repeatingDays;
 
     this._onEdit = null;
-    this._state.isDate = false;
+    this._state.isDate = true;
     this._state.isRepeated = this._isRepeated();
 
     this._onEditButtonClick = this._onEditButtonClick.bind(this);
   }
 
   _createDate(tmstp) {
-    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" disabled>`;
-  }
+    return `
+    <fieldset class="card__date-deadline" ${this._state.isDate ? '' : 'disabled'}>
+      <label class="card__input-deadline-wrap">
+        <input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" disabled>
+      </label>
 
-  _createTime(tmstp) {
-    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" disabled>`;
+      <label class="card__input-deadline-wrap">
+        <input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" disabled>
+      </label>
+    </fieldset>`.trim();
   }
 
   _createHashtags(tags) {
@@ -69,15 +74,7 @@ export default class Task extends Component {
           <div class="card__settings">
             <div class="card__details">
               <div class="card__dates">
-                <fieldset class="card__date-deadline">
-                  <label class="card__input-deadline-wrap">
-                    ${this._createDate(this._dueDate)}
-                  </label>
-
-                  <label class="card__input-deadline-wrap">
-                    ${this._createTime(this._dueDate)}
-                  </label>
-                </fieldset>
+                ${this._createDate(this._dueDate)}
               </div>
 
               <div class="card__hashtag">
@@ -122,6 +119,7 @@ export default class Task extends Component {
   }
 
   update(data) {
+    console.log(data);
     this._title = data.title;
     this._color = data.color;
     this._tags = data.tags;

@@ -24,10 +24,12 @@ export default class TaskEdit extends Component {
     this._taskNumber = taskNumber;
 
     this._onSubmit = null;
-    this._state.isDate = false;
+    this._onDelete = null;
+    this._state.isDate = true;
     this._state.isRepeated = this._isRepeated();
 
     this._onSubmitButtonClick = this._onSubmitButtonClick.bind(this);
+    this._onDeleteButtonClick = this._onDeleteButtonClick.bind(this);
     this._onChangeDate = this._onChangeDate.bind(this);
     this._onChangeRepeated = this._onChangeRepeated.bind(this);
     this._onChangeColor = this._onChangeColor.bind(this);
@@ -43,8 +45,17 @@ export default class TaskEdit extends Component {
     </span>`.trim()).join(``);
   }
 
-  _createTime(tmstp) {
-    return `<input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}">`;
+  _createDate(tmstp) {
+    return `
+    <fieldset class="card__date-deadline" ${this._state.isDate ? '' : 'disabled'}>
+      <label class="card__input-deadline-wrap">
+        <input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" disabled>
+      </label>
+
+      <label class="card__input-deadline-wrap">
+        <input class="card__time" type="text" placeholder="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" name="time" value="${new Date(tmstp).toLocaleString(`en-US`, {hour: `numeric`, minute: `numeric`})}" disabled>
+      </label>
+    </fieldset>`.trim();
   }
 
   _createRepeatDays(days, number) {
@@ -71,10 +82,6 @@ export default class TaskEdit extends Component {
     return colorPanelMarkdown.join(``);
   }
 
-  _createDate(tmstp) {
-    return `<input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}">`;
-  }
-
   _isRepeated() {
     return Object.entries(this._repeatingDays).some((el) => el[1] === true);
   }
@@ -86,7 +93,8 @@ export default class TaskEdit extends Component {
       color: (value) => entry.color = value,
       dueDate: (value) => {
         moment.locale(`ru`);
-        entry.dueDate = moment(value, `DD MMM LT`).valueOf();
+        console.log(value);
+        entry.dueDate = moment(value, `D MMM h:m a`).valueOf();
       },
       repeat: (value) => entry.repeatingDays[value] = true
     };
@@ -157,15 +165,7 @@ export default class TaskEdit extends Component {
                   date: <span class="card__date-status">${this._state.isDate ? `yes` : `no`}</span>
                 </button>
 
-                <fieldset class="card__date-deadline" ${this._state.isDate ? `` : `disabled`}>
-                  <label class="card__input-deadline-wrap">
-                    ${this._createDate(this._dueDate)}
-                  </label>
-
-                  <label class="card__input-deadline-wrap">
-                    ${this._createTime(this._dueDate)}
-                  </label>
-                </fieldset>
+                ${this._createDate(this._dueDate)}
 
                 <button class="card__repeat-toggle" type="button">
                   repeat: <span class="card__repeat-status">${this._state.isRepeated ? `yes` : `no`}</span>
@@ -217,6 +217,12 @@ export default class TaskEdit extends Component {
     }
   }
 
+  set onDelete(fn) {
+    if (typeof fn === `function`) {
+      this._onDelete = fn;
+    }
+  }
+
   _onSubmitButtonClick(e) {
     e.preventDefault();
 
@@ -229,6 +235,11 @@ export default class TaskEdit extends Component {
     this._state.isRepeated = this._isRepeated();
 
     typeof this._onSubmit === `function` && this._onSubmit(newData);
+  }
+
+  _onDeleteButtonClick(e) {
+    e.preventDefault();
+    typeof this._onDelete === `function` && this._onDelete();
   }
 
   _partialUpdate() {
@@ -347,6 +358,7 @@ export default class TaskEdit extends Component {
 
   setListener() {
     this._element.querySelector(`.card__save`).addEventListener(`click`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__delete`).addEventListener(`click`, this._onDeleteButtonClick);
     this._element.querySelector(`.card__date-deadline-toggle`).addEventListener(`click`, this._onChangeDate);
     this._element.querySelector(`.card__repeat-toggle`).addEventListener(`click`, this._onChangeRepeated);
     this._element.querySelector(`.card__colors-wrap`).addEventListener(`click`, this._onChangeColor);
@@ -358,6 +370,7 @@ export default class TaskEdit extends Component {
 
   removeListener() {
     this._element.querySelector(`.card__save`).removeEventListener(`click`, this._onSubmitButtonClick);
+    this._element.querySelector(`.card__delete`).removeEventListener(`click`, this._onDeleteButtonClick);
     this._element.querySelector(`.card__date-deadline-toggle`).removeEventListener(`click`, this._onChangeDate);
     this._element.querySelector(`.card__repeat-toggle`).removeEventListener(`click`, this._onChangeRepeated);
     this._element.querySelector(`.card__colors-wrap`).removeEventListener(`click`, this._onChangeColor);
