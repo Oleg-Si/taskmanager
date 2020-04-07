@@ -19,7 +19,7 @@ export default class Task extends Component {
 
   _createDate(tmstp) {
     return `
-    <fieldset class="card__date-deadline" ${this._state.isDate ? '' : 'disabled'}>
+    <fieldset class="card__date-deadline" ${this._state.isDate ? `` : `disabled`}>
       <label class="card__input-deadline-wrap">
         <input class="card__date" type="text" placeholder="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" name="date" value="${new Date(tmstp).getDate()} ${new Date(tmstp).toLocaleString(`ru-RU`, {month: `long`})}" disabled>
       </label>
@@ -119,7 +119,6 @@ export default class Task extends Component {
   }
 
   update(data) {
-    console.log(data);
     this._title = data.title;
     this._color = data.color;
     this._tags = data.tags;

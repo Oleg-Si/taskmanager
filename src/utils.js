@@ -31,6 +31,6 @@ export const getRandomArrayItems = (array, count) => {
   }
 
   return newArray;
-}
+};
 
 export const getRandomRGBColor = () => `rgb(${getRandomInt(1, 256)},${getRandomInt(1, 256)},${getRandomInt(1, 256)})`;

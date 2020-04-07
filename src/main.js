@@ -1,4 +1,4 @@
-import {getRandomInt, renderElements, getRandomRGBColor} from './utils.js';
+import {renderElements, getRandomRGBColor} from './utils.js';
 import {filters, taskData} from './mock.js';
 import moment from 'moment';
 import flatpickr from 'flatpickr';
@@ -67,7 +67,6 @@ const createTask = (countTask) => {
 
 const filterTasks = (name) => {
   switch (name) {
-
     case `filter__all`: {
       return allTasks;
     }
@@ -98,12 +97,43 @@ renderElements(allTasks, tasksContainer);
 const controlForm = document.querySelector(`.control__form`);
 const bordContainer = document.querySelector(`.board`);
 const statisticContainer = document.querySelector(`.statistic`);
+const statisticInput = document.querySelector(`.statistic__period-input`);
+
+const weekStart = moment().weekday(1);
+const weekEnd = moment().weekday(7);
+
+const filterTasksByDay = (timeStart, timeEnd) => allTasks.filter((it) => it._dueDate >= timeStart && it._dueDate <= timeEnd);
+
+flatpickr(statisticInput, {
+  mode: `range`,
+  dateFormat: `d.m.Y`,
+  locale: flatpickrRuLang,
+  defaultDate: [weekStart.format(`DD.MM.YYYY`), weekEnd.format(`DD.MM.YYYY`)],
+  onClose: (e) => {
+    colorsStatistic.unrender();
+    tagsStatistic.unrender();
+    daysStatistic.unrender();
+
+    const timeStart = moment(e[0]).format(`x`);
+    const timeEnd = moment(e[1]).format(`x`);
+
+    const filteredTasks = filterTasksByDay(timeStart, timeEnd);
+
+    colorsStatistic.update(getStatisticData(`colors`, filteredTasks));
+    tagsStatistic.update(getStatisticData(`tags`, filteredTasks));
+    daysStatistic.update(getStatisticData(`line`, filteredTasks));
+
+    colorsStatistic.render();
+    tagsStatistic.render();
+    daysStatistic.render();
+  }
+});
 
 const Blocks = [
   `statistic`,
   `result`,
   `board`
-]
+];
 
 controlForm.addEventListener(`click`, (e) => {
   if (e.target.tagName.toLowerCase() === `input`) {
@@ -111,7 +141,7 @@ controlForm.addEventListener(`click`, (e) => {
 
     Blocks.forEach((el) => {
       document.querySelector(`.${el}`).classList.add(`visually-hidden`);
-    })
+    });
 
     switch (menuPageId) {
       case `control__task` : {
@@ -121,15 +151,21 @@ controlForm.addEventListener(`click`, (e) => {
 
       case `control__statistic` : {
         statisticContainer.classList.remove(`visually-hidden`);
-        colorsStatistic.update(getStatisticData(`colors`, allTasks));
-        tagsStatistic.update(getStatisticData(`tags`, allTasks));
+
+        const filteredTasks = filterTasksByDay(weekStart.format(`x`), weekEnd.format(`x`));
+
+        colorsStatistic.update(getStatisticData(`colors`, filteredTasks));
+        tagsStatistic.update(getStatisticData(`tags`, filteredTasks));
+        daysStatistic.update(getStatisticData(`line`, filteredTasks));
+
         colorsStatistic.render();
         tagsStatistic.render();
+        daysStatistic.render();
         break;
       }
     }
   }
-})
+});
 
 const getStatisticData = (type, tasks) => {
 
@@ -139,25 +175,17 @@ const getStatisticData = (type, tasks) => {
     blue: `#0c5cdd`,
     black: `#000000`,
     green: `#31b55c`
-  }
-
-  const Colors = [
-    `ff3cb9`,
-    `ffe125`,
-    `000000`,
-    `0c5cdd`,
-    `31b55c`
-  ];
+  };
 
   const datasets = {
     data: [],
     backgroundColor: []
-  }
+  };
 
   const data = {
     labels: [],
     datasets: [datasets]
-  }
+  };
 
   const dataBox = new Map();
 
@@ -189,7 +217,7 @@ const getStatisticData = (type, tasks) => {
         } else {
           dataBox.set(el, 1);
         }
-      })
+      });
     }
 
     for (const item of dataBox) {
@@ -224,102 +252,27 @@ const getStatisticData = (type, tasks) => {
     }
   }
 
-  console.log(data)
-
   return data;
 };
 
 const colorsCtx = document.querySelector(`.statistic__colors`);
 const tagsCtx = document.querySelector(`.statistic__tags`);
+const daysCtx = document.querySelector(`.statistic__days`);
 
 const colorsStatistic = new Statistic({
   target: colorsCtx,
   title: `DONE BY: COLORS`,
+  type: `pie`,
   data: getStatisticData(`colors`, allTasks)
 });
 const tagsStatistic = new Statistic({
   target: tagsCtx,
   title: `DONE BY: TAGS`,
+  type: `pie`,
   data: getStatisticData(`tags`, allTasks)
 });
-
-const statisticInput = document.querySelector(`.statistic__period-input`);
-
-flatpickr(statisticInput, {
-  mode: "range",
-  dateFormat: "d.m.Y",
-  locale: flatpickrRuLang,
-  defaultDate: [moment().weekday(-6).format(`DD.MM.YYYY`), moment().weekday(0).format(`DD.MM.YYYY`)],
-  onClose: (e) => {
-    const timeStart = moment(e[0]).format(`x`);
-    const timeEnd = moment(e[1]).format(`x`);
-
-    const filteredTasks = allTasks.filter((it) => it._dueDate >= timeStart && it._dueDate <= timeEnd);
-
-
-    colorsStatistic.unrender();
-    tagsStatistic.unrender();
-    colorsStatistic.update(getStatisticData(`colors`, filteredTasks));
-    tagsStatistic.update(getStatisticData(`tags`, filteredTasks));
-    colorsStatistic.render();
-    tagsStatistic.render();
-
-    console.log(filteredTasks);
-
-
-    return filteredTasks;
-  }
-});
-
-import Chart from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-const daysCtx = document.querySelector(`.statistic__days`);
-
-const daysChart = new Chart(daysCtx, {
-  plugins: [ChartDataLabels],
+const daysStatistic = new Statistic({
+  target: daysCtx,
   type: `line`,
-  data: getStatisticData(`line`, allTasks),
-  options: {
-    plugins: {
-      datalabels: {
-        font: {
-          size: 8
-        },
-        color: `#ffffff`
-      }
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero:true,
-          display: false
-        },
-        gridLines: {
-          display: false,
-          drawBorder: false
-        }
-      }],
-      xAxes: [{
-        ticks: {
-          fontStyle: `bold`,
-          fontColor: `#000000`
-        },
-        gridLines: {
-          display: false,
-          drawBorder: false
-        }
-      }]
-    },
-    legend: {
-      display: false
-    },
-    layout: {
-      padding: {
-        top: 10
-      }
-    },
-    tooltips: {
-      enabled: false
-    }
-  }
+  data: getStatisticData(`line`, allTasks)
 });
